@@ -1,4 +1,5 @@
 # coding=utf8
+import os
 import time
 
 import torchvision.models
@@ -196,6 +197,96 @@ def student_train(epochs, lambda_u, labeled_train_loader, unlabeled_train_loader
 
 
 # In[53]:
+def valid_best(best_acc,val_loader, model, epoch, mode, test_model_path_root, test_model_path, task_type):
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    losses = AverageMeter()
+    macro_f1_scores = AverageMeter()
+    micro_f1_scores = AverageMeter()
+    accuracies = AverageMeter()
+    precision_1 = AverageMeter()
+    recall_1 = AverageMeter()
+    if not os.path.exists(test_model_path_root):
+        os.makedirs(test_model_path_root, exist_ok=True)
+    if task_type == "test":
+        print("test task")
+        if os.path.exists(test_model_path):
+            resume = torch.load(test_model_path)
+            model.load_state_dict(resume['state_dict'], strict=False)
+            print('Load checkpoint {}'.format(test_model_path))
+    model.eval()
+    bar = Bar(f'{mode}', max=len(val_loader))
+    end = time.time()
+    print(f'\n************{mode}*************')
+    # best_acc = 0
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(val_loader):
+            # measure data loading time
+            data_time.update(time.time() - end)
+
+            inputs, targets = inputs.cuda(), targets.cuda(non_blocking=True)
+
+            # compute output
+            outputs = model(inputs)
+
+            # compute loss
+            loss = criterion(outputs, targets)
+
+            ## compute metrics
+            # accuracy
+            probs = torch.softmax(outputs, dim=1)
+            predicted_labels = torch.argmax(probs, dim=1)
+
+            correct = predicted_labels == targets
+            accuracy = correct.sum() / float(targets.size(0))
+
+            # macro F1 score
+            macro_f1 = macro_f1_score(predicted_labels.flatten(), targets.flatten())
+
+            # micro F1 score
+            micro_f1 = micro_f1_score(predicted_labels.flatten(), targets.flatten())
+
+            # precision_per_class = precision_score(targets.flatten(),predicted_labels.flatten(), average=None)
+            overall_precision = precision_score(targets.cpu().flatten(), predicted_labels.cpu().flatten(), average='micro')
+            # recall_per_class = recall_score(targets.flatten(),predicted_labels.flatten(), average=None)
+            overall_recall = recall_score(targets.cpu().flatten(), predicted_labels.cpu().flatten(), average='micro')
+
+            # update the loss and metrics
+            losses.update(loss.item(), inputs.size(0))
+            accuracies.update(accuracy, inputs.size(0))
+            precision_1.update(overall_precision, inputs.size(0))
+            recall_1.update(overall_recall, inputs.size(0))
+            macro_f1_scores.update(macro_f1.item(), inputs.size(0))
+            micro_f1_scores.update(micro_f1.item(), inputs.size(0))
+
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+
+            # print the logs
+            # if (epoch % 50 == 0 and epoch != 0) or epoch + 1 == len(val_loader):
+            print(
+                '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.4f} | Accuracy: {accuracy:.4f} | Macro_F1_score: {macro_f1_score:.4f} | Micro_F1_score: {micro_f1_score:.4f}'.format(
+                    batch=batch_idx + 1,
+                    size=len(val_loader),
+                    data=data_time.avg,
+                    bt=batch_time.avg,
+                    total=bar.elapsed_td,
+                    eta=bar.eta_td,
+                    loss=losses.avg,
+                    accuracy=accuracies.avg,
+                    macro_f1_score=macro_f1_scores.avg,
+                    micro_f1_score=micro_f1_scores.avg
+                ))
+    print(accuracies.avg, best_acc)
+    if (accuracies.avg >= best_acc) & (task_type == "valid"):
+        best_acc = accuracies.avg
+        save_file_path = test_model_path
+        states = {'state_dict': model.state_dict(),
+                  'epoch': epoch,
+                  'acc': best_acc}
+        torch.save(states, save_file_path)
+        print('Saved!')
+    return best_acc,losses.avg, accuracies.avg, macro_f1_scores.avg, micro_f1_scores.avg, overall_precision, overall_recall
 
 
 def valid(val_loader, model, epoch, mode):
@@ -254,21 +345,21 @@ def valid(val_loader, model, epoch, mode):
 
             # measure elapsed time
             batch_time.update(time.time() - end)
-
-            # print the logs
-            print(
-                '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.4f} | Accuracy: {accuracy:.4f} | Macro_F1_score: {macro_f1_score:.4f} | Micro_F1_score: {micro_f1_score:.4f}'.format(
-                    batch=batch_idx + 1,
-                    size=len(val_loader),
-                    data=data_time.avg,
-                    bt=batch_time.avg,
-                    total=bar.elapsed_td,
-                    eta=bar.eta_td,
-                    loss=losses.avg,
-                    accuracy=accuracies.avg,
-                    macro_f1_score=macro_f1_scores.avg,
-                    micro_f1_score=micro_f1_scores.avg
-                ))
+            if (epoch % 50 == 0 and epoch != 0) or epoch + 1 == len(val_loader):
+                # print the logs
+                print(
+                    '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.4f} | Accuracy: {accuracy:.4f} | Macro_F1_score: {macro_f1_score:.4f} | Micro_F1_score: {micro_f1_score:.4f}'.format(
+                        batch=batch_idx + 1,
+                        size=len(val_loader),
+                        data=data_time.avg,
+                        bt=batch_time.avg,
+                        total=bar.elapsed_td,
+                        eta=bar.eta_td,
+                        loss=losses.avg,
+                        accuracy=accuracies.avg,
+                        macro_f1_score=macro_f1_scores.avg,
+                        micro_f1_score=micro_f1_scores.avg
+                    ))
 
     return losses.avg, accuracies.avg, macro_f1_scores.avg, micro_f1_scores.avg, overall_precision, overall_recall
 

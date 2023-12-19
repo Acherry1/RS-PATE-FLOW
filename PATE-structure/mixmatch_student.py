@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
+import os.path
+
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 # <a href="https://colab.research.google.com/github/vasudev-sharma/Expand_AI-Assignment/blob/master/Expand_ai_problem_2.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
@@ -18,10 +20,12 @@ import wandb
 import torch
 from torchvision import transforms
 import numpy as np
+
+from data_now.args import args_parser
 from mixmatch_class import WeightEMA
 from PIL import Image
 
-from mixmatch_train_functions import create_model, valid, train_data_handle, student_train
+from mixmatch_train_functions import create_model, valid, train_data_handle, student_train, valid_best
 
 # set seed to reproduce results
 # np.random.seed(9)
@@ -33,7 +37,7 @@ from mixmatch_train_functions import create_model, valid, train_data_handle, stu
 n_labeled_per_class = 5
 image_size = 64
 batch_size = 64
-lr = 0.0001  # 5e-4  /  5e-5
+lr = 5e-4  # 0.0001  # 5e-4  /  5e-5
 epochs = 30  # 30
 log_freq = 10
 ema_decay = 0.99
@@ -95,25 +99,37 @@ optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2, verbose=True)
 criterion = torch.nn.CrossEntropyLoss()
 ema_optimizer = WeightEMA(model, ema_model, lr, alpha=ema_decay)
+args = args_parser()
 
 
-def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader, val_loader, epochs, log_freq, name):
+def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader, val_loader, epochs, log_freq, name, teacher_num,seed):
     print('********Training has started***************')
+    test_model_path_root = args.test_model_path_root.replace('dataset', args.dataset).replace('arch', args.arch).replace('epochs', str(epochs)).replace('teacher-num',
+                                                                                                                                                        str(teacher_num))
+    test_model_path = args.test_model_path.replace('dataset', args.dataset).replace('arch', args.arch).replace('epochs', str(epochs)).replace('teacher-num', str(teacher_num)).replace('seed', str(seed))
 
     wandb.watch(model, log='all')
     # print(model)
     step = 0
+    best_acc = 0
     for epoch in range(1, epochs + 1):
         print('\n Epoch: [%d | %d]' % (epoch, epochs))
+
         # labeled_trainloader, unlabeled_trainloader, optimizer, ema_optimizer, model, num_classes, epoch, train_iteration=1024, T=0.5, alpha=0.75
         train_loss, train_loss_x, train_loss_u = student_train(epochs, lambda_u, labeled_train_loader, unlabeled_train_loader, optimizer, ema_optimizer, model, num_classes,
                                                                epoch=epoch,
                                                                train_iteration=train_iteration)
 
-        _, train_accuracy, train_macro_f1, train_micro_f1, _, _ = valid(labeled_train_loader, ema_model, epoch, mode='Train_stats')
-
-        val_loss, val_accuracy, val_macro_f1, val_micro_f1, _, _ = valid(val_loader, ema_model, epoch, mode='Validation Stats')
-        # scheduler.step(val_loss)
+        _, _, train_accuracy, train_macro_f1, train_micro_f1, _, _ = valid_best(best_acc, labeled_train_loader, ema_model, epoch, mode='Train_stats',
+                                                                                test_model_path_root=test_model_path_root,
+                                                                                test_model_path=test_model_path,
+                                                                                task_type='train')
+        # valid验证集的数据
+        best_acc, val_loss, val_accuracy, val_macro_f1, val_micro_f1, _, _ = valid_best(best_acc, val_loader, ema_model, epoch, mode='Validation Stats',
+                                                                                        test_model_path_root=test_model_path_root,
+                                                                                        test_model_path=test_model_path, task_type="valid")
+        # 根据loss调整准确率
+        scheduler.step(val_loss)
         step = train_iteration * (epoch + 1)
 
         wandb.log({
@@ -135,20 +151,27 @@ def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader
 
         })
     #     losses.avg, accuracies.avg, macro_f1_scores.avg, micro_f1_scores.avg
-    test_loss, test_accuracy, test_macro_f1, test_micro_f1, overall_precision, overall_recall = valid(test_loader, ema_model, epoch=0, mode='Test Stats ')
-    print(test_accuracy, overall_precision, overall_recall)
+    # 在validation中保存最优的模型
+    # 加载训练好的最优模型进行test训练
+    _, test_loss, test_accuracy, test_macro_f1, test_micro_f1, overall_precision, overall_recall = valid_best(best_acc, test_loader, ema_model, epoch=0, mode='Test Stats ',
+                                                                                                              test_model_path_root=test_model_path_root,
+                                                                                                              test_model_path=test_model_path, task_type='test')
+    print(test_accuracy.cpu().numpy(), overall_precision, overall_recall)
     print('**************Training has Finished**********************')
+    if not os.path.exists("./students_models"):
+        os.makedirs("./students_models")
 
     # saving the model
-    torch.save(model.state_dict(), '{}.h5'.format(name))
-    return test_accuracy, overall_precision, overall_recall, model
+    torch.save(model.state_dict(), './students_models/{}.h5'.format(name))
+    return test_accuracy.cpu().numpy(), overall_precision, overall_recall, model
 
 
 #   wandb.save('model.h5')
 
 def mixmatch_student_main(teacher_num, train_data, unlabeled_train_data, test_data, valid_data, img_size, seed, n_shot):
     # wandb initialize a new run
-    wandb_name = "{}_{}_{}".format(str(teacher_num), len(train_data), seed)
+    print("seed",seed)
+    wandb_name = "{}_{}_{}".format(str(teacher_num), len(train_data[1]), seed)
     wandb.init(project='RS-MIXMATCH', entity="menghyin", name=wandb_name)
     wandb.watch_called = False
 
@@ -194,8 +217,9 @@ def mixmatch_student_main(teacher_num, train_data, unlabeled_train_data, test_da
         break
     # ----------------------------------
     test_accuracy, overall_precision, overall_recall, save_model = train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader, val_loader, epochs, log_freq,
-                                                                               wandb_name)
-    return test_accuracy, save_model, len(labeled_train_loader), len(unlabeled_train_loader), len(test_loader), len(val_loader),overall_precision, overall_recall
+                                                                               wandb_name, teacher_num,seed)
+    wandb.finish()
+    return test_accuracy, save_model, len(train_data[1]), 2000-len(train_data[1]), len(test_data[1]), len(valid_data[1]), overall_precision, overall_recall
 
 
 if __name__ == '__main__':
