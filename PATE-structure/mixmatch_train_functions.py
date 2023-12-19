@@ -36,7 +36,8 @@ def create_model(num_classes, ema=False):
         # model = WideResNet(num_classes=num_classes)
         # model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=True)
         model = torchvision.models.resnet50(ResNet50_Weights.DEFAULT)
-        model.fc = nn.Linear(1024, num_classes)
+        # model.fc = nn.Linear(2048, 1024)
+        model.fc = nn.Linear(2048, num_classes)
         model.to("cuda")
 
     if ema == True:
@@ -239,9 +240,9 @@ def valid(val_loader, model, epoch, mode):
             micro_f1 = micro_f1_score(predicted_labels.flatten(), targets.flatten())
 
             # precision_per_class = precision_score(targets.flatten(),predicted_labels.flatten(), average=None)
-            overall_precision = precision_score(targets.flatten(), predicted_labels.flatten(), average='micro')
+            overall_precision = precision_score(targets.cpu().flatten(), predicted_labels.cpu().flatten(), average='micro')
             # recall_per_class = recall_score(targets.flatten(),predicted_labels.flatten(), average=None)
-            overall_recall = recall_score(targets.flatten(), predicted_labels.flatten(), average='micro')
+            overall_recall = recall_score(targets.cpu().flatten(), predicted_labels.cpu().flatten(), average='micro')
 
             # update the loss and metrics
             losses.update(loss.item(), inputs.size(0))

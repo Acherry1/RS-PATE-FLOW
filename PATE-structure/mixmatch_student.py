@@ -34,10 +34,10 @@ n_labeled_per_class = 5
 image_size = 64
 batch_size = 64
 lr = 0.0001  # 5e-4  /  5e-5
-epochs = 200  # 30
+epochs = 30  # 30
 log_freq = 10
 ema_decay = 0.99
-train_iteration = 32  # No of iterations per epoch  512
+train_iteration = 512  # No of iterations per epoch  512
 lambda_u = 75
 T = 0.5
 num_classes = 10
@@ -148,7 +148,7 @@ def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader
 
 def mixmatch_student_main(teacher_num, train_data, unlabeled_train_data, test_data, valid_data, img_size, seed, n_shot):
     # wandb initialize a new run
-    wandb_name = "{}_{}_{}".format(str(teacher_num), len(train_data), len(seed))
+    wandb_name = "{}_{}_{}".format(str(teacher_num), len(train_data), seed)
     wandb.init(project='RS-MIXMATCH', entity="menghyin", name=wandb_name)
     wandb.watch_called = False
 
