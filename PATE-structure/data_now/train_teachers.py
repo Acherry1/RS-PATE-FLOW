@@ -162,7 +162,7 @@ def main(prms: ExperimentParameters,
     ]
     start = datetime.now()
 
-    semaphore = multiprocessing.BoundedSemaphore(process_count)
+    # semaphore = multiprocessing.BoundedSemaphore(process_count)
     num = 0
     for teacher_group in teacher_groups:
         now = datetime.now()

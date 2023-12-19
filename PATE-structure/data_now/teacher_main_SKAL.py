@@ -63,7 +63,7 @@ def mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val
     for i in range(args.start_epoch, epochs):
         beg_time = time()
         train_acc, train_losses = train(i, train_loader, net, optim, criterion, n_classes)
-        best_acc, val_accuracy, val_accuracy_by_class, out_put = validation_test(i, best_acc, val_loader, net, resume_path, criterion, n_classes, run_type="Validation")
+        best_acc, val_accuracy, val_accuracy_by_class, out_put, _, _, _, _ = validation_test(i, best_acc, val_loader, net, resume_path, criterion, n_classes, run_type="Validation")
         end_time = time()
         all_time = all_time + (end_time - beg_time)
         print('training_time: ', all_time)
@@ -121,8 +121,7 @@ def teacher_main(epochs, teacher_num, teacher_id, train_data, test_data, valid_d
         drop_last=False)
     # bulid model
     resume_path_root = args.resume_path_root.replace('dataset', args.dataset).replace('arch', args.arch).replace('epochs', str(epochs)).replace('teacher-num',
-                                                                                                                                                str(teacher_num)).replace(
-        'teacher-id', str(teacher_id))
+                                                                                                                                                str(teacher_num))
     resume_path = args.resume_path.replace('dataset', args.dataset).replace('arch', args.arch).replace('epochs', str(epochs)).replace('teacher-num', str(teacher_num)).replace(
         'teacher-id', str(teacher_id))
     if args.dataset == 'AID':

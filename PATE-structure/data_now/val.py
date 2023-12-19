@@ -27,7 +27,7 @@ def validation_test(epoch, best_acc, val_loader, net, resume_path, criterion, nu
                 _, classes = torch.nn.functional.softmax(logits, dim=-1).topk(1)
                 classes = classes.view(-1).long()
                 out_put.append(classes)
-                # loss = criterion(logits, labels.to(dtype=torch.int64))
+                loss = criterion(logits, labels.to(dtype=torch.int64))
                 acc = accuracy(logits, labels.to(dtype=torch.int64))
                 _, predicted = torch.max(logits, 1)
                 for j in range(len(imgs_s1)):
@@ -36,14 +36,14 @@ def validation_test(epoch, best_acc, val_loader, net, resume_path, criterion, nu
                     prediction = int(predicted.tolist()[j])
                     class_correct[label] += (prediction == label)
                     class_total[label] += 1
-            conf_matrix = confusion_matrix(labels, predicted)
+            conf_matrix = confusion_matrix(labels.cpu().numpy(), predicted.cpu().numpy())
 
-            precision_per_class = precision_score(labels, predicted, average=None)
-            overall_precision = precision_score(labels, predicted, average='micro')
-            recall_per_class = recall_score(labels, predicted, average=None)
-            overall_recall = recall_score(labels, predicted, average='micro')
+            precision_per_class = precision_score(labels.cpu().numpy(), predicted.cpu().numpy(), average=None)
+            overall_precision = precision_score(labels.cpu().numpy(), predicted.cpu().numpy(), average='micro')
+            recall_per_class = recall_score(labels.cpu().numpy(), predicted.cpu().numpy(), average=None)
+            overall_recall = recall_score(labels.cpu().numpy(), predicted.cpu().numpy(), average='micro')
             accuracies.update(acc, logits.size(0))
-
+            losses.update(loss.item(), logits.size(0))
             if (i % 50 == 0 and i != 0) or i + 1 == len(val_loader):
                 print('{}:   Epoch[{}]:{}/{}    Loss:{:.4f}   Accu:{:.2f}%'. \
                       format(run_type, epoch, i + 1, len(val_loader), float(losses.avg), float(accuracies.avg) * 100))
