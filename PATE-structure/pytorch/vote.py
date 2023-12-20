@@ -26,7 +26,7 @@ def load_net(n_classes, net_path):
     #                 n_classes=n_classes,
     #                 mode=args.mode,
     #                 energy_thr=args.energy_thr).cpu()
-    net.load_state_dict(torch.load(f'{net_path}/model.pt'), strict=False)
+    net.load_state_dict(torch.load(f'{net_pgitath}/model.pt'), strict=False)
     print('Load checkpoint {}'.format(net_path))
     if net.cuda():
         net = net.cuda()
@@ -81,6 +81,7 @@ def main(
                                                 args.img_size,
                                                 args.n_workers)
     batch_size = len(public_data[1])
+    print("val_batch_size:",batch_size)
     val_loader = DataLoader(dataset=void_datasets, batch_size=batch_size, shuffle=False,
                             num_workers=args.n_workers,
                             drop_last=False)

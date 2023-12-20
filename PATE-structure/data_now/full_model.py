@@ -301,4 +301,3 @@ class FullModel(nn.Module):
         classes = classes.view(-1).long()
         return classes
 
-

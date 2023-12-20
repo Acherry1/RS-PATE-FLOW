@@ -38,7 +38,7 @@ pate:
   nums_teachers: [ 75 ]
   precision: 0.01
   seeds: [ 9 ]
-  seeds2: [ 0, 1, 2, 3, 4 ]
+  seeds2: [ 0, 1, 2, 3, 4,5 ]
   sigmas: [ 4 ]
   sigmas1: [ 20 ]
   ts: [ 60 ]

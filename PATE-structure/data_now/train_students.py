@@ -1,4 +1,6 @@
 import ast
+import os
+import pickle
 from os import makedirs
 import numpy as np
 import pandas as pd
@@ -127,7 +129,15 @@ def main(
                                                aggregator=aggregator)
                 makedirs(student_dir, exist_ok=True)
                 # student.save(path=student_dir)
-                torch.save(student.state_dict(), student_dir)
+                if not os.path.exists(student_dir):
+                    os.makedirs(student_dir)
+
+                # torch.save(student.state_dict(), f'{student_dir}/model.pt')
+
+                # with open(file=f'{student_dir}/model.pickle', mode='wb') as f:
+                #     pickle.dump(self, f)
+
+                # torch.save(student.state_dict(), os.path.join(student_dir,"".))
                 stats_path = prms.resources.out_dir / 'stats_students.csv'
                 statistics.update(prms.pate.__dict__)
                 statistics.update({

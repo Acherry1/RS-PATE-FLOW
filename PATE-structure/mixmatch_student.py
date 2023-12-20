@@ -37,7 +37,7 @@ from mixmatch_train_functions import create_model, valid, train_data_handle, stu
 n_labeled_per_class = 5
 image_size = 64
 batch_size = 64
-lr = 5e-4  # 0.0001  # 5e-4  /  5e-5
+lr =  5e-6  # 5e-4  /  5e-5
 epochs = 30  # 30
 log_freq = 10
 ema_decay = 0.99
