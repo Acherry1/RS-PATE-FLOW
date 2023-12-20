@@ -197,7 +197,7 @@ def student_train(epochs, lambda_u, labeled_train_loader, unlabeled_train_loader
 
 
 # In[53]:
-def valid_best(best_acc,val_loader, model, epoch, mode, test_model_path_root, test_model_path, task_type):
+def valid_best(best_acc, val_loader, model, epoch, mode, test_model_path_root, test_model_path, task_type):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -286,7 +286,7 @@ def valid_best(best_acc,val_loader, model, epoch, mode, test_model_path_root, te
                   'acc': best_acc}
         torch.save(states, save_file_path)
         print('Saved!')
-    return best_acc,losses.avg, accuracies.avg, macro_f1_scores.avg, micro_f1_scores.avg, overall_precision, overall_recall
+    return best_acc, losses.avg, accuracies.avg, macro_f1_scores.avg, micro_f1_scores.avg, overall_precision, overall_recall
 
 
 def valid(val_loader, model, epoch, mode):
@@ -408,7 +408,7 @@ def labels_unlabeled_split(labels, n_labeled_per_class, num_classes, seed):
         np.random.shuffle(idx)
         train_labeled_idx.extend(idx[:n_labeled_per_class])
         # 从第n个到最后一个是无标签数据
-        train_unlabeled_idx.extend(idx[n_labeled_per_class:-1])
+        train_unlabeled_idx.extend(idx[n_labeled_per_class:])
     # 全部取出后再次打乱（设置seed）
     np.random.seed(seed)
     np.random.shuffle(train_labeled_idx)
@@ -426,13 +426,23 @@ def train_data_handle(train_data, unlabeled_train_data, test_data, valid_data, t
     x_valid, y_valid = valid_data
     unlabeled_x_train, unlabeled_y_train = unlabeled_train_data
     # 分为有标签数据、无标签数据、验证集
-    # train_labeled_idx, train_unlabeled_idx = labels_unlabeled_split(y_train, n_labeled_per_class, num_classes, seed)
+    train_labeled_idx, train_unlabeled_idx = labels_unlabeled_split(y_train, n_labeled_per_class, num_classes, seed)
+    print(len(train_labeled_idx), len(train_unlabeled_idx))
     # # # 根据index取出具体的数据和标签
-    # label_features = x_train[train_labeled_idx]
-    # label_targets = y_train[train_labeled_idx]
-    # unlabeled_features = x_train[train_unlabeled_idx]
-    # unlabeled_targets = y_train[train_unlabeled_idx]
+    label_features = x_train[train_labeled_idx]
+    label_targets = y_train[train_labeled_idx]
+    unlabeled_features = x_train[train_unlabeled_idx]
+    unlabeled_targets = y_train[train_unlabeled_idx]
+    # -----
+    # 分离标签数据
+    x_train = label_features
+    y_train = label_targets
+    # 合并unlabeled数据
+    unlabeled_x_train = np.concatenate((unlabeled_x_train, unlabeled_features), axis=0)
+    unlabeled_y_train = np.concatenate((unlabeled_y_train, unlabeled_targets), axis=0)
+    # -----
     # Train Dataset
+    print("x_train:", len(x_train), "unlabeled_x_train:", len(unlabeled_x_train))
     label_datasets, unlabeled_datasets = student_load_datasets(x_train, y_train, unlabeled_x_train, unlabeled_y_train, img_size)
     # label_datasets, unlabeled_datasets = student_load_datasets(label_features, label_targets, unlabeled_features, unlabeled_targets, img_size)
     # # Validation and Test Datasets

@@ -34,7 +34,7 @@ from mixmatch_train_functions import create_model, valid, train_data_handle, stu
 # get_ipython().system('wandb login e61e9565bc9a2970c0b0bb55976865b93d3e0f9a')
 
 # 每类的查询量
-n_labeled_per_class = 5
+n_labeled_per_class = 50
 image_size = 64
 batch_size = 64
 lr =  5e-6  # 5e-4  /  5e-5
