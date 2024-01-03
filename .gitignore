@@ -1,2 +1,5 @@
-
+*.yaml
 *.pth
+*.h5
+wandb
+checkpoints

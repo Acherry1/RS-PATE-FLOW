@@ -41,6 +41,7 @@ def prepare_private_partitions(prms: ExperimentParameters,
         budgets=prms.pate.budgets,
         distribution=prms.pate.distribution,
         seed=prms.pate.seed)
+    # partitions是教师子集subsets，mapping_t2p？
     partitions, mapping_t2p = pack_subsets(
         data_private=(x_private, y_private),
         n_teachers=prms.pate.n_teachers,
@@ -137,10 +138,11 @@ def main(prms: ExperimentParameters,
 
     x_test, y_test = data_factory.data_test(seed=prms.pate.seed)
     x_valid, y_valid = data_factory.data_valid(seed=prms.pate.seed)
+    # 为教师准备数据
     partitions, budgets_per_sample, mapping_t2p = prepare_private_partitions(
         prms=prms, data_private=data_factory.data_private(seed=prms.pate.seed))
 
-    # train the teacher ensemble
+    # train the teacher ensemble训练教师集合
     train_teacher_fn = ExperimentFactory(prms.data.data_name).step_teachers
 
     teacher_count = prms.pate.n_teachers - n_reduce_teachers

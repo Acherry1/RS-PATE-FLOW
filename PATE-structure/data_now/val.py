@@ -53,7 +53,7 @@ def validation_test(epoch, best_acc, val_loader, net, resume_path, criterion, nu
     out_put = torch.squeeze(out_put)
     print('best_acc: {:.2f}%'.format(best_acc * 100))
     print('curr_acc: {:.2f}%'.format(accuracies.avg * 100))
-    if (accuracies.avg >= best_acc) and run_type == "Validation":
+    if (accuracies.avg >= best_acc) and run_type == "Validation" :
         best_acc = accuracies.avg
         save_file_path = resume_path
         states = {'state_dict': net.state_dict(),

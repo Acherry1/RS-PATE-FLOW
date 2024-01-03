@@ -17,9 +17,9 @@ def args_parser():
     parser.add_argument('--test_model_path_root', default='students_test_checkpoints/dataset_arch_epochs_teacher-num', type=str)
 
     # model alexnet
-    parser.add_argument('--arch', default='googlenet', type=str, choices=['alexnet', 'googlenet', 'resnet18', 'vgg16'])
+    parser.add_argument('--arch', default='resnet18', type=str, choices=['alexnet', 'googlenet', 'resnet18', 'vgg16'])
     parser.add_argument('--mode', default='s1', type=str, choices=['s1', 's2'])
-    parser.add_argument('--batch_size', default=64, type=int)
+    parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--img_size', default=64, type=int)
     parser.add_argument('--energy_thr', default=0.7, type=float)
     parser.add_argument('--n_workers', default=1, type=int)

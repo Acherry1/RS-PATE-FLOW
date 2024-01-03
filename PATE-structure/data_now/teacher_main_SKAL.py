@@ -29,7 +29,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 args = args_parser()
 
 
-def mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val_loader, mode='s1'):
+def mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val_loader, mode='s1', best_acc=0):
     net = FullModel(arch=args.arch,
                     n_classes=n_classes,
                     mode=mode,
@@ -51,7 +51,7 @@ def mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val
     # criterion = nn.CrossEntropyLoss()
     optim = torch.optim.Adam(net.get_parameters(), lr=args.lr)
     sche = torch.optim.lr_scheduler.StepLR(optim, step_size=args.step_size)
-    best_acc = 0
+
     all_time = 0
     # best_acc = 0
     # best_acc, val_acc = validation(0, best_acc, val_loader, net, resume_path, criterion)
@@ -71,7 +71,7 @@ def mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val
         #
 
         sche.step()
-    return net, train_loss_curve
+    return net, train_loss_curve, best_acc
     # val_epoch = 1
 
 
@@ -138,9 +138,10 @@ def teacher_main(epochs, teacher_num, teacher_id, train_data, test_data, valid_d
         n_classes = 0
     train_start_time = time()
     train_loss_total = []
-    _, train_loss_curve1 = mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val_loader, mode="s1")
+    best_acc = 0
+    _, train_loss_curve1, best_acc = mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val_loader, mode="s1", best_acc=best_acc)
 
-    net, train_loss_curve2 = mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val_loader, mode="s2")
+    net, train_loss_curve2, _ = mode_1_2(epochs, n_classes, resume_path, resume_path_root, train_loader, val_loader, mode="s2", best_acc=best_acc)
     train_loss_total.append(train_loss_curve1)
     train_loss_total.append(train_loss_curve2)
     best_acc = 0

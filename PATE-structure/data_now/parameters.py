@@ -139,6 +139,9 @@ class ExperimentParameters:
     def voting_output_path(self, voting_seed: int, aggregator: str):
         filename = f'{aggregator}_{self.pate.collector}_{self.pate.delta}_{self.pate.sigma}_{self.pate.sigma1}_{self.pate.t}_data.npz'
         return self.voting_dir(voting_seed) / filename
+    def voting_predictions_path(self, voting_seed: int, aggregator: str):
+        filename = f'{aggregator}_{self.pate.collector}_{self.pate.delta}{self.pate.t}_data.npz'
+        return self.voting_dir(voting_seed) / filename
 
     def student_dir(self, voting_seed: int, aggregator: str):
         path = self.resources.out_dir / f'student'

@@ -40,11 +40,23 @@ def main(
     # 使它返回test的准确率等信息
     # train_data, test_data, valid_data, img_size, seed, n_shot
     # test_accuracy, save_model, len(labeled_train_loader), len(unlabeled_train_loader), len(test_loader), len(val_loader)
-
+    # mixmatch训练学生模型
     test_accuracy, model, labeled_train_size, unlabeled_train_size, test_size, val_size, overall_precision, overall_recall = mixmatch_student_main(teacher_num, train_data,
                                                                                                                                                    unlabeled_train_data, test_data,
                                                                                                                                                    valid_data, image_size,
                                                                                                                                                    seed, n_shot)
+
+    # 使用与教师机相同的模型训练学生
+    # 1。找到教师机的训练模型
+    if ""=="":
+
+
+        pass
+    # 2.进行改造
+    # 2.1输入数据改造
+    # 2.2输出信息更改
+    # 2.3保存模型及数据路径更改
+    # 2.4确保不会覆盖之前训练数据
     # train model
     # print("x_train_len",len(x_train))
     # batch_size: int = min(64, int(len(x_train)))

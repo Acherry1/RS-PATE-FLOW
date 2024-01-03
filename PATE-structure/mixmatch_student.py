@@ -34,10 +34,10 @@ from mixmatch_train_functions import create_model, valid, train_data_handle, stu
 # get_ipython().system('wandb login e61e9565bc9a2970c0b0bb55976865b93d3e0f9a')
 
 # 每类的查询量
-n_labeled_per_class = 50
+n_labeled_per_class = 10
 image_size = 64
-batch_size = 64
-lr =  5e-6  # 5e-4  /  5e-5
+batch_size = 32
+lr = 5e-5  # 5e-4  /  5e-5
 epochs = 30  # 30
 log_freq = 10
 ema_decay = 0.99
@@ -102,11 +102,13 @@ ema_optimizer = WeightEMA(model, ema_model, lr, alpha=ema_decay)
 args = args_parser()
 
 
-def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader, val_loader, epochs, log_freq, name, teacher_num,seed):
+def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader, val_loader, epochs, log_freq, name, teacher_num, seed):
     print('********Training has started***************')
     test_model_path_root = args.test_model_path_root.replace('dataset', args.dataset).replace('arch', args.arch).replace('epochs', str(epochs)).replace('teacher-num',
                                                                                                                                                         str(teacher_num))
-    test_model_path = args.test_model_path.replace('dataset', args.dataset).replace('arch', args.arch).replace('epochs', str(epochs)).replace('teacher-num', str(teacher_num)).replace('seed', str(seed))
+    test_model_path = args.test_model_path.replace('dataset', args.dataset).replace('arch', args.arch).replace('epochs', str(epochs)).replace('teacher-num',
+                                                                                                                                              str(teacher_num)).replace('seed',
+                                                                                                                                                                        str(seed))
 
     wandb.watch(model, log='all')
     # print(model)
@@ -129,7 +131,7 @@ def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader
                                                                                         test_model_path_root=test_model_path_root,
                                                                                         test_model_path=test_model_path, task_type="valid")
         # 根据loss调整准确率
-        scheduler.step(val_loss)
+        # scheduler.step(val_loss)
         step = train_iteration * (epoch + 1)
 
         wandb.log({
@@ -170,8 +172,8 @@ def train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader
 
 def mixmatch_student_main(teacher_num, train_data, unlabeled_train_data, test_data, valid_data, img_size, seed, n_shot):
     # wandb initialize a new run
-    print("seed",seed)
-    wandb_name = "{}_{}_{}".format(str(teacher_num), len(train_data[1]), seed)
+    print("seed", seed)
+    wandb_name = "Z{}_{}_{}-best-net".format(str(teacher_num), len(train_data[1]), seed)
     wandb.init(project='RS-MIXMATCH', entity="menghyin", name=wandb_name)
     wandb.watch_called = False
 
@@ -217,9 +219,9 @@ def mixmatch_student_main(teacher_num, train_data, unlabeled_train_data, test_da
         break
     # ----------------------------------
     test_accuracy, overall_precision, overall_recall, save_model = train_model(model, labeled_train_loader, unlabeled_train_loader, test_loader, val_loader, epochs, log_freq,
-                                                                               wandb_name, teacher_num,seed)
+                                                                               wandb_name, teacher_num, seed)
     wandb.finish()
-    return test_accuracy, save_model, len(train_data[1]), 2000-len(train_data[1]), len(test_data[1]), len(valid_data[1]), overall_precision, overall_recall
+    return test_accuracy, save_model, len(train_data[1]), 2000 - len(train_data[1]), len(test_data[1]), len(valid_data[1]), overall_precision, overall_recall
 
 
 if __name__ == '__main__':

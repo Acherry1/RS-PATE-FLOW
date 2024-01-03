@@ -1,3 +1,4 @@
+#coding=utf8
 from pathlib import Path
 import math
 from typing import Dict, List, Tuple, Union
@@ -87,6 +88,7 @@ def pack_subsets(data_private: Tuple[np.array, np.array],
                  collector: str,
                  precision: float = 0.1):
     """ This method determines the allocation of all sensitive data to all teachers.
+    将敏感数据分配给所有教师
     @param data_private: tuple of features and labels
     @param n_teachers:   int for the number of teachers to be trained
     @param budgets:      list of budgets corresponding to the private data
@@ -112,6 +114,7 @@ def pack_subsets(data_private: Tuple[np.array, np.array],
 
     if collector == 'GNMax':
         budgets_per_sample = np.array([min(budgets_per_sample)] * n_data)
+
     levels = np.unique(budgets_per_sample)
     ratios = np.array(
         [sum(budgets_per_sample == level) / n_data for level in levels])
@@ -135,10 +138,7 @@ def pack_subsets(data_private: Tuple[np.array, np.array],
                 if j < n_partitions - 1 else np.arange(len(labels_tmp), dtype=int)
             idx_teacher = np.array([False] * len(labels_tmp))
             idx_teacher[int_idx] = True
-            mapping_t2p.append(
-                list(
-                    np.arange(len(budgets_per_sample))[idx_level][
-                        np.logical_not(idx_used)][idx_teacher]))
+            mapping_t2p.append(list(np.arange(len(budgets_per_sample))[idx_level][ np.logical_not(idx_used)][idx_teacher]))
             x_train = features_tmp[
                 idx_teacher] if j < n_partitions - 1 else features_tmp
             y_train = labels_tmp[idx_teacher]
@@ -155,8 +155,7 @@ def set_budgets_per_sample(
         seed: int,
 ):
     """
-    This method determines the privacy specification of each sensitive data point according to the given distribution of
-    privacy specifications.
+    该方法根据给定的分布确定每个敏感数据点的隐私规范
     @param y_private:       array of all labels of the sensitive data
     @param budgets:         list of different privacy specifications
     @param distribution:    dict that contains one tuple for each label which contains one ratio for each epsilon
@@ -167,11 +166,11 @@ def set_budgets_per_sample(
 
     n_budgets = len(budgets)
     n_private = len(y_private)
-    # ���Լ���ǩ����
+    # 断言检测标签数量
     assert all([
         len(distribution[label]) == n_budgets for label in distribution.keys()
     ])
-    # ���Լ�����ݷֲ��������Ƿ����1
+    # 断言检测数据分布加起来是否等于1
     assert all(
         [sum(distribution[label]) == 1 for label in distribution.keys()])
 
@@ -188,13 +187,14 @@ def set_budgets_per_sample(
         n = len(idx)
         for j, ratio in enumerate(distribution[label]):
             # [ 0.54, 0.37, 0.09 ]
-            # ���ֱ���
+            # 划分比例
             if ratio == 0:
                 continue
             # if it is the last ratio, do last
             if j == n_budgets - 1:
                 budget_per_sample[idx] *= budgets[j]
             else:
+                # 将隐私预算随机分配给隐私数据
                 # all examples with label, sample from them
                 selected_idx = np.random.choice(idx,
                                                 int(round(n * ratio)),
@@ -357,6 +357,7 @@ class PATE:
         while count_votings < np.shape(self.predictions)[1]:
             if count_labels == self.n_labels:
                 break
+            # 计算costs=epsilon
             label, costs = self.aggregator.vote(
                 alphas=self.alphas,
                 mapping=self.mapping_t2p,

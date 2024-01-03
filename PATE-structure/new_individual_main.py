@@ -194,11 +194,19 @@ if __name__ == "__main__":
     # main(params_path = r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t100.yaml",out_dir = r"G:\RS1130\data\10_skal-flow-t100")
     # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t250.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t250")
     # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t300.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t300")
-    # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t50.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t50")
+    # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t50.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t50-best_net-sigma20")
+    # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t25.yaml", out_dir=r"G:\RS1130\data\Zt-15")
+
+    # G:\RS1130\data\Zt-15
     # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t15.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t15")
     # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t25.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t25")
+    # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t100.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t100-sigma15")
+    main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t250.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t250-sigma15")
 
-    main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t75.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t75")
+    # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t200.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t200-sigma15")
+    # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t150.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t150-sigma15")
+
+    # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t75.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t75")
 
     # main(params_path=r"G:\RS1130\codeNew\individualized-pate-SKAL\PATE-structure\10-personalized-t125.yaml", out_dir=r"G:\RS1130\data\10_skal-flow-t125")
     #

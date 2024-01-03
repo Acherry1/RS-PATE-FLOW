@@ -91,16 +91,16 @@ def main(
                 n_limit = sum(np.all(costs_curve <= np.array(limit), axis=1))
                 n_labels = n_limit - sum(y_pred[:n_limit] == -1)
             costs = costs_curve[n_limit - 1]
-
+            print("n_labels",n_labels)
             if n_labels < 2000:
                 # select samples for which teachers responded
                 response_filter = y_pred != -1
                 # 取标签数据、无标签数据、验证数据
-                x_train = features[response_filter]
-                y_train = y_pred[response_filter]
+                x_train = features[response_filter][:n_labels]
+                y_train = y_pred[response_filter][:n_labels]
                 unlabeled_filter = y_pred == -1
-                unlabeled_x_train = features[unlabeled_filter]
-                unlabeled_y_train = y_pred[unlabeled_filter]
+                unlabeled_x_train = features[n_labels:-1]
+                unlabeled_y_train = y_pred[n_labels:-1]
 
                 # x_train_unlabeled = features[response_filter][n_labels:-n_labels]
                 # y_train_unlabeled = y_pred[response_filter][n_labels:-n_labels]

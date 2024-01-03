@@ -154,7 +154,7 @@ class DataFactory:
             np.random.seed(seed)
             print(len(x))
             print(len(y))
-            print(n_test, n_private, n_public, n_valid)
+            # print(n_test, n_private, n_public, n_valid)
             data_test, data_private, data_public, data_valid = split_data(
                 x=x,
                 y=y,
